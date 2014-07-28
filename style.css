@@ -1,18 +1,18 @@
 font.priceblueitalicbig {
-    color: pink;
+  color: pink;
 }
 .rubles {
-    font-size: 14px;
-    font-weight: bold;
-    color: green;
-    white-space: nowrap;
-    text-align: right;
-    margin: 0 10px;
+  font-size: 12px;
+  font-weight: bold;
+  color: green;
+  white-space: nowrap;
+  text-align: right;
+  margin: 0 5px;
 }
 .refresh-price {
-    font-size: 14px;
-    position: fixed;
-    z-index: 1000;
-    top: 5px;
-    left: 5px;
+  font-size: 14px;
+  position: fixed;
+  z-index: 1000;
+  top: 5px;
+  left: 5px;
 }
