@@ -1,13 +1,13 @@
 {
    "content_scripts": [ {
       "css": [ "style.css" ],
-      "js": [ "jquery.js", "script.js" ],
+      "js": [ "script.js" ],
       "matches": [ "http://www.amazon.com/*", "https://www.amazon.com/*" ]
    } ],
    "description": "Add price with rubles.",
    "name": "Rubles in Amazon",
-   "permissions": [ "http://www.amazon.com/*", "https://www.amazon.com/*", "http://www.cbr.ru/*" ],
+   "permissions": [ "http://www.amazon.com/*", "https://www.amazon.com/*", "https://www.cbr.ru/*" ],
    "update_url": "http://clients2.google.com/service/update2/crx",
-   "version": "0.7",
-	"manifest_version": 2
+   "version": "0.8.1",
+   "manifest_version": 2
 }

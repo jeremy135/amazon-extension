@@ -1,3 +1,11 @@
+version 0.8
+===========
+04.11.2017
+----------
+- fixed get price from cbr
+- remove jquery dependency
+- place for price updated
+
 version 0.7
 ===========
 29-Jul-2014

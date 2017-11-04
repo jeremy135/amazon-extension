@@ -4,15 +4,22 @@
  * Date: 7/22/12
  * Time: 11:57 AM
  */
-(function($){
+(function(window, document) {
   "use strict";
-  var APP = {};
+  let APP = {};
 
   APP.core = function() {
-    var currentDate = '',
+    let currentDate = '',
       currentRate = '',
 
+
+      /**
+       * Массив селекторов по которым ищем цены
+       */
       $priceSelectors = [
+        '.a-size-mini.olpMessageWrapper',
+        '.sx-price',
+        '.a-size-base.a-color-base',
         '.priceLarge',
         '.price',
         '.ourprice',
@@ -23,9 +30,14 @@
         '.a-color-price',
         '#price td.a-span12',
         '.listprice',
-        '.offer-price'
+        '.offer-price',
+        '.a-size-mini'
       ].join(','),
 
+
+      /**
+       * Приводим цифры к формату денег вида 100 000.00
+       */
       moneyFormat = function(num) {
           var strNum = '' + parseFloat(num).toFixed(2),
               parts = strNum.split('.'),
@@ -35,7 +47,7 @@
           if (head) {
             var l = head.length,
                 p = Math.floor(l / 3);
-            for (var i = 0; i < p; i++) {
+            for (let i = 0; i < p; i++) {
               s.push(head.substr(l - (i * 3) - 3, 3));
             }
             s.push(head.substr(0, (l % 3)));
@@ -48,17 +60,26 @@
           }
       },
 
+
+      /**
+       * Находим цены и вставляем рублевый эквивалент
+       */
       insertPrice = function () {
-        $($priceSelectors).each(function () {
-          var price = parseFloat($(this).text().replace('$', "").replace(",","")),
-            newPrice = Math.round(price * currentRate);
+        document.querySelectorAll($priceSelectors).forEach(function(item) {
+         const re = /(\d)\s+(?=\d)/g;
+         const price = parseFloat(item.innerText.replace('$', '').replace(',','').replace(re, '$1.'));
+         const newPrice = Math.round(price * currentRate);
           if (!isNaN(newPrice)) {
-            this.innerHTML += '<span class="rubles">( ' +
-                moneyFormat(newPrice) + ' руб.)</div>';
+            item.innerHTML += `<span class="jd-rubles">( ${moneyFormat(newPrice)} руб.)</div>`;
           }
+
         });
       },
 
+
+      /**
+       * Получаем курс валюты и запоминаем его в localStorage
+       */
       setCurrentRate = function (xml) {
         if (!xml) {
           console.log('empty xml. Fail.');
@@ -67,11 +88,15 @@
         var usd = $(xml).find('Valute[ID="R01235"] Value').html(),
           rate = usd.replace(',', '.');
         currentRate = rate;
-        localStorage.setItem('rate', rate);
-        localStorage.setItem('date', currentDate);
+        localStorage.setItem('jd-rate', rate);
+        localStorage.setItem('jd-date', currentDate);
         insertPrice();
       },
 
+
+      /**
+       * Обертка ajax get запроса
+       */
       ajax = function (url) {
         var xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
@@ -83,11 +108,22 @@
         xhr.send();
       },
 
+
+      /**
+       * Удаляем старые цены, встваляем новые
+       */
       updatePrice = function () {
-        $('.rubles').remove();
+        document.querySelectorAll('.jd-rubles').forEach(function(item) {
+          const parent = item.parentNode;
+          parent.removeChild(item);
+        });
         insertPrice();
       },
 
+
+      /**
+       * Запускаем обновление цен, не чаще чем раз в 2 секунды
+       */
       update = function () {
         var now = new Date().getTime();
         if (lastUpdate + 2000 < now) {
@@ -98,19 +134,27 @@
         }
       },
 
+
+      /**
+       * Дата последнего обновления
+       */
       lastUpdate = new Date().getTime(),
 
+
+      /**
+       * Запускаем вставку цен в рублях
+       */
       init = function() {
         var today = new Date(),
           d = today.getDate(),
           m = today.getMonth()+ 1,
           y = today.getFullYear();
         currentDate = d + '-' + m + '-' + y;
-        if (localStorage.getItem('date') !== currentDate) {
-          var cUrl = "http://www.cbr.ru/scripts/XML_daily.asp";
+        if (window.localStorage.getItem('jd-date') !== currentDate) {
+          var cUrl = "https://www.cbr.ru/scripts/XML_daily.asp";
           ajax(cUrl);
         } else {
-          currentRate = localStorage.getItem('rate');
+          currentRate = window.localStorage.getItem('jd-rate');
           insertPrice();
         }
       };
@@ -121,21 +165,46 @@
     };
   }();
 
-  $(document).ready(function() {
+
+  /**
+   * Запускаем приложение и подписываемся на обновления дома
+   */
+  function runApp() {
     setTimeout(function () {
       APP.core.init();
     }, 700);
-    setTimeout( function () {
-      document.addEventListener("DOMSubtreeModified", function(event){
+    setTimeout(function () {
+      document.addEventListener('DOMSubtreeModified', function(event){
         APP.core.update();
       });
-    },10000);
-
-  });
-
-})($);
+    }, 10000);
+  }
 
 
+  /**
+   * Ждем разрузки страницы, для запуска приложения
+   */
+  function waitLoading() {
+    document.onreadystatechange = function () {
+      if (document.readyState === 'interactive') {
+        runApp();
+      }
+    }
+  }
 
 
+  /**
+   * Анализируем состояние страницы
+   */
+  switch(document.readyState) {
+    case 'loading':
+      waitLoading();
+      break;
+    case 'interactive':
+    case 'complete':
+      runApp()
+      break;
+  }
+
+})(window, window.document);
 
