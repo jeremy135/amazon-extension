@@ -85,8 +85,10 @@
           console.log('empty xml. Fail.');
           return;
         }
-        var usd = $(xml).find('Valute[ID="R01235"] Value').html(),
-          rate = usd.replace(',', '.');
+        const parser = new window.DOMParser();
+        const xmlDoc = parser.parseFromString(xml, 'text/xml');
+        const usd = xmlDoc.querySelector('Valute[ID="R01235"] Value').textContent;
+        const rate = usd.replace(',', '.');
         currentRate = rate;
         localStorage.setItem('jd-rate', rate);
         localStorage.setItem('jd-date', currentDate);
